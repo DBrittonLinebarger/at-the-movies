@@ -1,16 +1,25 @@
 package edu.cnm.deepdive.atthemovies.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import edu.cnm.deepdive.atthemovies.view.FlatActor;
+import edu.cnm.deepdive.atthemovies.view.FlatMovie;
 import java.net.URI;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,9 +32,9 @@ import org.springframework.stereotype.Component;
 
 @Entity
 @Component
-@JsonIgnoreProperties(value = {"created", "updated", "href"}, allowGetters = true,
+@JsonIgnoreProperties(value = {"id", "created", "updated", "href", "actors"}, allowGetters = true,
   ignoreUnknown = true)
-public class Movie {
+public class Movie implements FlatMovie {
 
   private static EntityLinks entityLinks;
 
@@ -55,6 +64,12 @@ public class Movie {
 
   @Enumerated(EnumType.STRING)
   private Genre genre;
+
+  @ManyToMany(fetch = FetchType.LAZY, mappedBy = "movies",
+  cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+  @OrderBy("name ASC")
+  @JsonSerialize(contentAs = FlatActor.class)
+  private List<Actor> actors = new LinkedList<>();
 
   public UUID getId() {
     return id;
@@ -94,6 +109,10 @@ public class Movie {
 
   public URI getHref() {
     return entityLinks.linkForSingleResource(Movie.class, id).toUri();
+  }
+
+  public List<Actor> getActors() {
+    return actors;
   }
 
   @PostConstruct

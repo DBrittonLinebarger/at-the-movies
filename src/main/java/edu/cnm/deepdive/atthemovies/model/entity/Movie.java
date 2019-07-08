@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 
 @Entity
 @Component
-@JsonIgnoreProperties(value = {"id", "created", "updated", "href"}, allowGetters = true,
+@JsonIgnoreProperties(value = {"created", "updated", "href"}, allowGetters = true,
   ignoreUnknown = true)
 public class Movie {
 
@@ -97,9 +97,7 @@ public class Movie {
   }
 
   @PostConstruct
-  private void init() {
-    String ignore = entityLinks.toString();
-  }
+  private void init() { String ignore = entityLinks.toString(); }
 
   @Autowired
   private void setEntityLinks(EntityLinks entityLinks) {

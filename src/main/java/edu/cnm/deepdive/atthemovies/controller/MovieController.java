@@ -64,12 +64,31 @@ public class MovieController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Movie> post(@RequestBody Movie movie) {
     repository.save(movie);
+    if (movie.getGenre() != null) {
+      UUID genreId = movie.getGenre().getId();
+      movie.setGenre(genreRepository.findById(genreId).get());
+    }
     return ResponseEntity.created(movie.getHref()).body(movie);
   }
 
   @GetMapping(value = "{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Movie get(@PathVariable("id") UUID id) {
     return repository.findById(id).get();
+  }
+
+  @PutMapping(value = "{id}",
+      consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public Movie put(@PathVariable("id") UUID id, @RequestBody Movie movie) {
+    Movie existingMovie = repository.findById(id).get();
+    existingMovie.setGenre(movie.getGenre());
+    existingMovie.setScreenwriter(movie.getScreenwriter());
+    existingMovie.setTitle(movie.getTitle());
+    repository.save(existingMovie);
+    if (movie.getGenre() != null) {
+      UUID genreId = movie.getGenre().getId();
+      existingMovie.setGenre(genreRepository.findById(genreId).get());
+    }
+    return existingMovie;
   }
 
   @Transactional
